@@ -23,14 +23,14 @@ jobs:
           command: |
             gox -os="windows" -arch="amd64" -output="dist/spotifycli_{{.OS}}_{{.Arch}}"
             cd dist/ && gzip *
- workflows:
-   version: 2
-   build-deploy:
-     jobs:
-       - build
-       - deploy:
-           requires:
-             - build
-           filters:
-             branches:
-               only: master
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
