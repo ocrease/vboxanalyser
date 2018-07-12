@@ -23,6 +23,8 @@ jobs:
           command: |
             gox -os="windows" -arch="amd64" -output="dist/vboxanalyser_{{.OS}}_{{.Arch}}"
             cd dist/ && gzip *
+      - store_artifacts:
+          path: dist/
       - add_ssh_keys
       - run:
           name: create release
