@@ -22,7 +22,7 @@ jobs:
           name: cross compile
           command: |
             gox -os="windows" -arch="amd64" -output="dist/vboxanalyser_{{.OS}}_{{.Arch}}"
-            cd dist/ && zip *
+            cd dist/ && zip vboxanalyser *
       - store_artifacts:
           path: dist/
       - add_ssh_keys
