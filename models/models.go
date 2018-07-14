@@ -80,28 +80,38 @@ func (file *VboFile) NumColumns() int {
 	return len(file.columns)
 }
 
-func (file *VboFile) MaxValue() float64 {
+func (file *VboFile) MaxValueWithFunc(extractor func(*VboFileDataRow) float64) float64 {
 	var max float64
 
 	for r := range file.data.rows {
-		engineSpeed := file.data.rows[r].engineSpeed
-		if engineSpeed > max {
-			max = engineSpeed
+		val := extractor(&file.data.rows[r])
+		if val > max {
+			max = val
 		}
 	}
 	return max
 }
 
-func (file *VboFile) MaxSpeedMph() float64 {
-	var max float64
+func ExtractValueFunctionFactory(channel string) func(*VboFileDataRow) float64 {
+	var f func(*VboFileDataRow) float64
 
-	for r := range file.data.rows {
-		velocityMph := file.data.rows[r].velocityMph
-		if velocityMph > max {
-			max = velocityMph
+	switch channel {
+	case "rpm":
+		f = func(r *VboFileDataRow) float64 {
+			return r.engineSpeed
+		}
+
+	case "speedKph":
+		f = func(r *VboFileDataRow) float64 {
+			return r.velocity
+		}
+
+	case "speedMph":
+		f = func(r *VboFileDataRow) float64 {
+			return r.velocityMph
 		}
 	}
-	return max
+	return f
 }
 
 // type VboFileChannelUnits struct {
