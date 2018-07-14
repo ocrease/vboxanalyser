@@ -4,9 +4,7 @@ A tool to perform bulk analysis of Racelogic VBOX files
 ## Usage
 Download the zip file in the latest release and unzip into a folder. 
 
-Run vboxanalyser.exe and specify the options below. -dir "Path to vbox files" -t "threshold". Eg:
-
-
+Run vboxanalyser.exe and specify the options below.
 
 ## Options 
 There are three command line parameters that can be passed to the program.
