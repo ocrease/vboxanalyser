@@ -110,6 +110,11 @@ func ExtractValueFunctionFactory(channel string) func(*VboFileDataRow) float64 {
 		f = func(r *VboFileDataRow) float64 {
 			return r.velocityMph
 		}
+
+	case "temp":
+		f = func(r *VboFileDataRow) float64 {
+			return r.coolantTemp
+		}
 	}
 	return f
 }
@@ -140,10 +145,10 @@ type VboFileData struct {
 
 //VboFileDataRow contains the data fields in a row
 type VboFileDataRow struct {
+	data                 []string
 	sats                 int
 	time                 time.Time
-	lat                  string
-	lon                  string
+	latLon               Point
 	velocity             float64
 	heading              float64
 	height               float64
@@ -157,10 +162,18 @@ type VboFileDataRow struct {
 func NewVboFileDataRow(fields []string, fieldIndex map[string]int) VboFileDataRow {
 	row := VboFileDataRow{}
 
+	var lat, lon float64
+
 	for name, index := range fieldIndex {
 		switch name {
 		case "sats":
 			row.sats, _ = strconv.Atoi(fields[index])
+		case "lat":
+			lat, _ = strconv.ParseFloat(fields[index], 64)
+		case "lon":
+			lon, _ = strconv.ParseFloat(fields[index], 64)
+		case "Corretced_coolant_temp":
+			row.coolantTemp, _ = strconv.ParseFloat(fields[index], 64)
 		case "LOT_Engine_Spd":
 			row.engineSpeed, _ = strconv.ParseFloat(fields[index], 64)
 		case "velocity":
@@ -169,6 +182,13 @@ func NewVboFileDataRow(fields []string, fieldIndex map[string]int) VboFileDataRo
 			row.velocityMph, _ = strconv.ParseFloat(fields[index], 64)
 		}
 	}
+
+	row.latLon = Point{lat, lon}
 	return row
 
+}
+
+type Point struct {
+	lat float64
+	lon float64
 }
