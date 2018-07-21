@@ -4,8 +4,20 @@ A tool to perform bulk analysis of Racelogic VBOX files
 ## Usage
 Download the zip file in the latest release and unzip into a folder. 
 
-Run vboxanalyser.exe -dir "Path to vbox files" -t "threshold". Eg:
+Run vboxanalyser.exe and specify the options below.
 
-`vboxanalyser.exe -dir C:\Racing -t 8400`
+## Options 
+There are three command line parameters that can be passed to the program.
 
-This will analyse all .vbo files under the directory and will list any files where the RPM reached more than 8400.
+`-dir` Specify the directory to scan. Defaults to the current directory
+
+`-c` Specify the data channel to scan. Choose from rpm, speedKph, speedMph. Defaults to rpm
+
+`-t` Specify the threshold. Only files with a value higher than the threshold will be printed. Defaults to 8300 (for RPM) 
+
+Example:
+
+`vboxanalyser.exe -dir C:\Racing -c speedKph -t 190`
+
+
+
