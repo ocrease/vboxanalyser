@@ -7,14 +7,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ocrease/vboxanalyser/models"
+	"github.com/ocrease/vboxanalyser"
+	"github.com/ocrease/vboxanalyser/file"
+	"github.com/ocrease/vboxanalyser/s2"
 )
 
 const VboxExtension = ".vbo"
 
 func main() {
 	dir := flag.String("dir", ".", "Specify the directory to scan")
-	channel := flag.String("c", "rpm", "Specify the channel to analyse - rpm, speedKph, speedMph")
+	channel := flag.String("c", "LOT_Engine_Spd", "Specify the channel to analyse - rpm, speedKph, speedMph")
 	threshold := flag.Float64("t", 8300, "Specify the RPM threshold")
 
 	flag.Parse()
@@ -32,13 +34,18 @@ func main() {
 func createFileProcessor(channel string, threshold float64) func(string, os.FileInfo, error) error {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil
+			return err
 		}
 		if !info.IsDir() {
 			if filepath.Ext(path) == VboxExtension {
-				file := models.ParseFile(path)
-				if v := file.MaxValueWithFunc(models.ExtractValueFunctionFactory(channel)); v > threshold {
-					fmt.Printf("%v - %v laps - %v\n", path, file.NumLaps(), v)
+				file := file.ParseFile(path)
+				//fmt.Printf("%v - num points %v, num columns %v\n", path, len(file.Data.Rows), len(file.Columns))
+				v, err := file.MaxValueWithFunc(vboxanalyser.ExtractValueFunctionFactory(channel, &file))
+				if err != nil {
+					fmt.Printf("%v - %v\n", path, err)
+				}
+				if v > threshold {
+					fmt.Printf("%v - %v laps - %v\n", path, s2.NumLaps(&file), v)
 				}
 			}
 		}
