@@ -38,7 +38,7 @@ func createFileProcessor(channel string, threshold float64) func(string, os.File
 			if filepath.Ext(path) == VboxExtension {
 				file := models.ParseFile(path)
 				if v := file.MaxValueWithFunc(models.ExtractValueFunctionFactory(channel)); v > threshold {
-					fmt.Printf("%v - %v\n", path, v)
+					fmt.Printf("%v - %v laps - %v\n", path, file.NumLaps(), v)
 				}
 			}
 		}
