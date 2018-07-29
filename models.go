@@ -1,8 +1,8 @@
 package vboxanalyser
 
 import (
-	"errors"
 	"fmt"
+	"strconv"
 )
 
 //VboFile Main file object
@@ -37,7 +37,8 @@ type VboFileComments struct {
 
 //VboFileData contains all the data rows
 type VboFileData struct {
-	Rows []VboFileDataRow
+	Rows      []VboFileDataRow
+	MaxValues []float64
 }
 
 //VboFileDataRow contains the data fields in a row
@@ -54,34 +55,38 @@ type LatLng struct {
 	Lng float64
 }
 
-func (file *VboFile) AppendDataRow(row VboFileDataRow) {
-	file.Data.Rows = append(file.Data.Rows, row)
-}
+func (file *VboFile) CreateDataRow(fields []string) {
+	fieldIndex := file.Columns
+	data := make([]interface{}, len(fieldIndex))
 
-func NewVboFileDataRow(data []interface{}) VboFileDataRow {
-	return VboFileDataRow{data}
-}
-
-func (file *VboFile) MaxValueWithFunc(extractor func(*VboFileDataRow) (interface{}, error)) (float64, error) {
-	var max float64
-
-	for r := range file.Data.Rows {
-		val, err := extractor(&file.Data.Rows[r])
-		if err != nil {
-			return 0, err
-		}
-		if val.(float64) > max {
-			max = val.(float64)
+	for name, index := range fieldIndex {
+		switch name {
+		case "sats":
+			data[index], _ = strconv.Atoi(fields[index])
+		default:
+			if v, err := strconv.ParseFloat(fields[index], 64); err == nil {
+				data[index] = v
+				file.Data.updateMaxValue(index, v)
+			}
 		}
 	}
-	return max, nil
+
+	file.Data.Rows = append(file.Data.Rows, VboFileDataRow{data})
+
 }
 
-func ExtractValueFunctionFactory(channel string, file *VboFile) func(*VboFileDataRow) (interface{}, error) {
-	return func(r *VboFileDataRow) (interface{}, error) {
-		if v, ok := file.Columns[channel]; ok {
-			return r.data[v], nil
-		}
-		return nil, errors.New(fmt.Sprintf("No channel name %v", channel))
+func (data *VboFileData) updateMaxValue(index int, val float64) {
+	if cur := data.MaxValues[index]; val > cur {
+		data.MaxValues[index] = val
 	}
+}
+
+func (file *VboFile) MaxValue(channel string) (float64, error) {
+	i, ok := file.Columns[channel]
+
+	if !ok {
+		return 0, fmt.Errorf("No channel name %v", channel)
+	}
+
+	return file.Data.MaxValues[i], nil
 }

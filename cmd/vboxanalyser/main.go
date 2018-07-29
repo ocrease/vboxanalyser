@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ocrease/vboxanalyser"
 	"github.com/ocrease/vboxanalyser/file"
 	"github.com/ocrease/vboxanalyser/s2"
 )
@@ -40,7 +39,7 @@ func createFileProcessor(channel string, threshold float64) func(string, os.File
 			if filepath.Ext(path) == VboxExtension {
 				file := file.ParseFile(path)
 				//fmt.Printf("%v - num points %v, num columns %v\n", path, len(file.Data.Rows), len(file.Columns))
-				v, err := file.MaxValueWithFunc(vboxanalyser.ExtractValueFunctionFactory(channel, &file))
+				v, err := file.MaxValue(channel)
 				if err != nil {
 					fmt.Printf("%v - %v\n", path, err)
 				}

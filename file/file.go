@@ -14,7 +14,7 @@ func ParseFile(path string) vboxanalyser.VboFile {
 	data, _ := os.Open(path)
 	defer data.Close()
 
-	vboFile := vboxanalyser.VboFile{Path: path, Columns: make(map[string]int), Data: &vboxanalyser.VboFileData{}}
+	vboFile := vboxanalyser.VboFile{Path: path, Columns: make(map[string]int)}
 
 	var section string
 
@@ -31,6 +31,7 @@ func ParseFile(path string) vboxanalyser.VboFile {
 			section = "columns"
 		case "[data]":
 			section = "data"
+			vboFile.Data = &vboxanalyser.VboFileData{MaxValues: make([]float64, len(vboFile.Columns))}
 		case "[laptiming]":
 			section = "laptiming"
 		default:
@@ -48,8 +49,7 @@ func ParseFile(path string) vboxanalyser.VboFile {
 func processRow(section string, line string, vboFile *vboxanalyser.VboFile) {
 	switch section {
 	case "data":
-		row := newVboFileDataRow(strings.Fields(line), vboFile.Columns)
-		vboFile.AppendDataRow(row)
+		vboFile.CreateDataRow(strings.Fields(line))
 	// case "header":
 	// 	vboFile.header = append(vboFile.header, strings.Fields(line)...)
 	case "laptiming":
@@ -64,21 +64,4 @@ func processRow(section string, line string, vboFile *vboxanalyser.VboFile) {
 			vboFile.Columns[v] = i
 		}
 	}
-}
-
-func newVboFileDataRow(fields []string, fieldIndex map[string]int) vboxanalyser.VboFileDataRow {
-	data := make([]interface{}, len(fieldIndex))
-
-	for name, index := range fieldIndex {
-		switch name {
-		case "sats":
-			data[index], _ = strconv.Atoi(fields[index])
-		default:
-			if v, err := strconv.ParseFloat(fields[index], 64); err == nil {
-				data[index] = v
-			}
-		}
-	}
-	return vboxanalyser.NewVboFileDataRow(data)
-
 }
