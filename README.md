@@ -4,20 +4,9 @@ A tool to perform bulk analysis of Racelogic VBOX files
 ## Usage
 Download the zip file in the latest release and unzip into a folder. 
 
-Run vboxanalyser.exe and specify the options below.
+Run vboxanalyser.exe. This should open up a browser window. If not, open a browser and got to `http://localhost:8080`. Using the file directory tree, use the chevrons to expand the directories. Then click on the directory name to analyse that directory and all subfolders.
 
-## Options 
-There are three command line parameters that can be passed to the program.
-
-`-dir` Specify the directory to scan. Defaults to the current directory
-
-`-c` Specify the data channel to scan. Choose from rpm, speedKph, speedMph. Defaults to rpm
-
-`-t` Specify the threshold. Only files with a value higher than the threshold will be printed. Defaults to 8300 (for RPM) 
-
-Example:
-
-`vboxanalyser.exe -dir C:\Racing -c speedKph -t 190`
-
+## Note
+This is very much work in progress. Use at your own risk.
 
 
