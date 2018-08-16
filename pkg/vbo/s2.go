@@ -1,9 +1,7 @@
-package s2
+package vbo
 
 import (
 	"github.com/golang/geo/s1"
-	"github.com/ocrease/vboxanalyser"
-
 	"github.com/golang/geo/s2"
 )
 
@@ -13,9 +11,9 @@ const (
 
 var gateWidth = s1.ChordAngleFromAngle(s1.Angle(12.5 / EarthRadius))
 
-func NumLaps(f *vboxanalyser.VboFile) int {
+func NumLaps(f *File) uint32 {
 	rows := f.Data.Rows
-	var numLaps = 0
+	var numLaps uint32
 	var crossingStartLine = false
 	for i, v := range rows {
 		if i > 0 {
@@ -40,7 +38,7 @@ func NumLaps(f *vboxanalyser.VboFile) int {
 
 }
 
-// func Distance(f *vboxanalyser.VboFile) float64 {
+// func Distance(f *vbo.File) float64 {
 // 	//latLons := make([]s2.LatLng, len(file.data.rows))
 // 	var distance float64
 // 	for i, v := range f.Data.Rows {

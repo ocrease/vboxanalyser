@@ -1,4 +1,4 @@
-package vboxanalyser
+package vbo
 
 import (
 	"fmt"
@@ -6,21 +6,20 @@ import (
 )
 
 //VboFile Main file object
-type VboFile struct {
+type File struct {
 	Path         string
 	CreationTime string
-	//header       []string
-	comments VboFileComments
-	Start    LatLng
-	Columns  map[string]int
-	Data     *VboFileData
+	comments     Comments
+	Start        LatLng
+	Columns      map[string]int
+	Data         *Data
 }
 
 // type VboFileChannelUnits struct {
 // }
 
 //VboFileComments contains file information
-type VboFileComments struct {
+type Comments struct {
 	vboxVersion  string
 	serialNumber string
 	engine       string
@@ -36,17 +35,17 @@ type VboFileComments struct {
 // }
 
 //VboFileData contains all the data rows
-type VboFileData struct {
-	Rows      []VboFileDataRow
+type Data struct {
+	Rows      []DataRow
 	MaxValues []float64
 }
 
 //VboFileDataRow contains the data fields in a row
-type VboFileDataRow struct {
+type DataRow struct {
 	data []interface{}
 }
 
-func (r *VboFileDataRow) GetValue(index int) interface{} {
+func (r *DataRow) GetValue(index int) interface{} {
 	return r.data[index]
 }
 
@@ -55,7 +54,7 @@ type LatLng struct {
 	Lng float64
 }
 
-func (file *VboFile) CreateDataRow(fields []string) {
+func (file *File) CreateDataRow(fields []string) {
 	fieldIndex := file.Columns
 	data := make([]interface{}, len(fieldIndex))
 
@@ -71,17 +70,17 @@ func (file *VboFile) CreateDataRow(fields []string) {
 		}
 	}
 
-	file.Data.Rows = append(file.Data.Rows, VboFileDataRow{data})
+	file.Data.Rows = append(file.Data.Rows, DataRow{data})
 
 }
 
-func (data *VboFileData) updateMaxValue(index int, val float64) {
+func (data *Data) updateMaxValue(index int, val float64) {
 	if cur := data.MaxValues[index]; val > cur {
 		data.MaxValues[index] = val
 	}
 }
 
-func (file *VboFile) MaxValue(channel string) (float64, error) {
+func (file *File) MaxValue(channel string) (float64, error) {
 	i, ok := file.Columns[channel]
 
 	if !ok {

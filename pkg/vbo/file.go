@@ -1,20 +1,18 @@
-package file
+package vbo
 
 import (
 	"bufio"
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/ocrease/vboxanalyser"
 )
 
 //ParseFile creates a VboFile representation
-func ParseFile(path string) vboxanalyser.VboFile {
+func ParseFile(path string) File {
 	data, _ := os.Open(path)
 	defer data.Close()
 
-	vboFile := vboxanalyser.VboFile{Path: path, Columns: make(map[string]int)}
+	vboFile := File{Path: path, Columns: make(map[string]int)}
 
 	var section string
 
@@ -31,7 +29,7 @@ func ParseFile(path string) vboxanalyser.VboFile {
 			section = "columns"
 		case "[data]":
 			section = "data"
-			vboFile.Data = &vboxanalyser.VboFileData{MaxValues: make([]float64, len(vboFile.Columns))}
+			vboFile.Data = &Data{MaxValues: make([]float64, len(vboFile.Columns))}
 		case "[laptiming]":
 			section = "laptiming"
 		default:
@@ -46,7 +44,7 @@ func ParseFile(path string) vboxanalyser.VboFile {
 	return vboFile
 }
 
-func processRow(section string, line string, vboFile *vboxanalyser.VboFile) {
+func processRow(section string, line string, vboFile *File) {
 	switch section {
 	case "data":
 		vboFile.CreateDataRow(strings.Fields(line))
@@ -57,7 +55,7 @@ func processRow(section string, line string, vboFile *vboxanalyser.VboFile) {
 		if fields[0] == "Start" {
 			lon1, _ := strconv.ParseFloat(fields[1], 64)
 			lat1, _ := strconv.ParseFloat(fields[2], 64)
-			vboFile.Start = vboxanalyser.LatLng{lat1 / 60, lon1 * -1 / 60}
+			vboFile.Start = LatLng{lat1 / 60, lon1 * -1 / 60}
 		}
 	case "columns":
 		for i, v := range strings.Fields(line) {
