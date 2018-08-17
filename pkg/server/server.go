@@ -41,5 +41,9 @@ func (s *Server) directoryList(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) analyseDirectory(w http.ResponseWriter, r *http.Request) {
 	path := r.FormValue("path")
-	json.NewEncoder(w).Encode(s.analyser.AnalyseDirectory(path))
+	summaries := make([]vbo.FileSummary, 0)
+	s.analyser.AnalyseDirectory(path, func(fs vbo.FileSummary) {
+		summaries = append(summaries, fs)
+	})
+	json.NewEncoder(w).Encode(summaries)
 }

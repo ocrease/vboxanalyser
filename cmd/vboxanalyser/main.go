@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -14,38 +15,25 @@ import (
 const VboxExtension = ".vbo"
 
 func main() {
+	cli := flag.Bool("cli", false, "Enable command line interface only")
 	dir := flag.String("dir", ".", "Specify the directory to scan")
 	channel := flag.String("c", "LOT_Engine_Spd", "Specify the channel to analyse - rpm, speedKph, speedMph")
 	threshold := flag.Float64("t", 8300, "Specify the RPM threshold")
 
-	_ = channel
-	_ = threshold
-	//staticPath := flag.String("webDir", "./web/vboxanalyser/src/", "directory for web resources")
-
 	flag.Parse()
 
-	// explorer := fe.FileExplorer{}
-
-	// files, err := explorer.GetDirectoryContents("C:/Racing/2018-03-16 Snetterton300")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// for _, f := range files {
-	// 	fmt.Printf("%v/%v\n", f.BasePath, f.Path)
-	// }
+	if !*cli {
+		browser.OpenURL("http://localhost:8080")
+		server.NewServer().Start()
+	}
 
 	path, _ := filepath.Abs(*dir)
 	fmt.Printf("Analysing .vbo files in: %v\n", path)
 
-	// err := filepath.Walk(*dir, createFileProcessor(*channel, *threshold))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	browser.OpenURL("http://localhost:8080")
-	server.NewServer().Start()
-
+	err := filepath.Walk(*dir, createFileProcessor(*channel, *threshold))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func createFileProcessor(channel string, threshold float64) func(string, os.FileInfo, error) error {
