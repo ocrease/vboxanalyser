@@ -75,7 +75,7 @@ func generateSummary(file *File, info os.FileInfo) *FileSummary {
 	if err != nil {
 		vel = 0
 	}
-	return &FileSummary{Version: summaryVersion, ModTime: info.ModTime(), Path: file.Path, NumLaps: NumLaps(file), MaxVelocity: vel, MaxRpm: rpm}
+	return &FileSummary{Version: summaryVersion, CreationTime: file.CreationTime, ModTime: info.ModTime(), Path: file.Path, NumLaps: NumLaps(file), MaxVelocity: vel, MaxRpm: rpm}
 }
 
 func summaryExists(path string) (string, bool) {
@@ -139,10 +139,11 @@ func saveSummary(path string, summary *FileSummary) {
 }
 
 type FileSummary struct {
-	Version     string    `json:"version,omitempty"`
-	ModTime     time.Time `json:"modtime"`
-	Path        string    `json:"path"`
-	NumLaps     uint32    `json:"numlaps"`
-	MaxVelocity float64   `json:"maxvelocity"`
-	MaxRpm      float64   `json:"maxrpm"`
+	Version      string    `json:"version,omitempty"`
+	CreationTime time.Time `json:"creationtime"`
+	ModTime      time.Time `json:"modtime"`
+	Path         string    `json:"path"`
+	NumLaps      uint32    `json:"numlaps"`
+	MaxVelocity  float64   `json:"maxvelocity"`
+	MaxRpm       float64   `json:"maxrpm"`
 }

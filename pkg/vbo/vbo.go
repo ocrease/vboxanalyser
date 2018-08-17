@@ -3,12 +3,13 @@ package vbo
 import (
 	"fmt"
 	"strconv"
+	"time"
 )
 
 //VboFile Main file object
 type File struct {
 	Path         string
-	CreationTime string
+	CreationTime time.Time
 	comments     Comments
 	Start        LatLng
 	Columns      map[string]int

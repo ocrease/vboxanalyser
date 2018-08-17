@@ -3,9 +3,13 @@ package vbo
 import (
 	"bufio"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
+
+var dateFormat = regexp.MustCompile(`(0[1-9]|[12]\d|3[01])/(0[1-9]|1[0-2])/([12]\d{3}) @ ([01]\d|2[0-3]):([0-5]\d):([0-5]\d)`)
 
 //ParseFile creates a VboFile representation
 func ParseFile(path string) File {
@@ -14,7 +18,7 @@ func ParseFile(path string) File {
 
 	vboFile := File{Path: path, Columns: make(map[string]int)}
 
-	var section string
+	section := "pre"
 
 	scanner := bufio.NewScanner(data)
 
@@ -46,6 +50,13 @@ func ParseFile(path string) File {
 
 func processRow(section string, line string, vboFile *File) {
 	switch section {
+	case "pre":
+		ds := dateFormat.FindString(line)
+		if len(ds) > 0 {
+			if date, err := time.Parse("02/01/2006 @ 15:04:05", ds); err == nil {
+				vboFile.CreationTime = date
+			}
+		}
 	case "data":
 		vboFile.CreateDataRow(strings.Fields(line))
 	// case "header":
