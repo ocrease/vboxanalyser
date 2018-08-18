@@ -1,8 +1,6 @@
 package vbo
 
 import (
-	"fmt"
-	"strconv"
 	"time"
 )
 
@@ -43,9 +41,10 @@ type Data struct {
 }
 
 type Lap struct {
-	startIndex uint32
-	endIndex   uint32
-	lapTime    time.Duration
+	startIndex int
+	endIndex   int
+	Partial    bool         `json:"partial"`
+	LapTime    jsonDuration `json:"laptime"`
 	maxValues  []float64
 }
 
@@ -61,40 +60,4 @@ func (r *DataRow) GetValue(index int) interface{} {
 type LatLng struct {
 	Lat float64
 	Lng float64
-}
-
-func (file *File) CreateDataRow(fields []string) {
-	fieldIndex := file.Columns
-	data := make([]interface{}, len(fieldIndex))
-
-	for name, index := range fieldIndex {
-		switch name {
-		case "sats":
-			data[index], _ = strconv.Atoi(fields[index])
-		default:
-			if v, err := strconv.ParseFloat(fields[index], 64); err == nil {
-				data[index] = v
-				file.Data.updateMaxValue(index, v)
-			}
-		}
-	}
-
-	file.Data.Rows = append(file.Data.Rows, DataRow{data})
-
-}
-
-func (data *Data) updateMaxValue(index int, val float64) {
-	if cur := data.MaxValues[index]; val > cur {
-		data.MaxValues[index] = val
-	}
-}
-
-func (file *File) MaxValue(channel string) (float64, error) {
-	i, ok := file.Columns[channel]
-
-	if !ok {
-		return 0, fmt.Errorf("No channel name %v", channel)
-	}
-
-	return file.Data.MaxValues[i], nil
 }

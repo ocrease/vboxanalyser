@@ -67,22 +67,27 @@ func handleFile(path string, info os.FileInfo, consumer func(FileSummary)) {
 }
 
 func generateSummary(file *File, info os.FileInfo) *FileSummary {
-	rpm, err := file.MaxValue("LOT_Engine_Spd")
+	rpm, err := file.maxValue("LOT_Engine_Spd")
 	if err != nil {
 		rpm = 0
 	}
-	vel, err := file.MaxValue("velocity")
+	vel, err := file.maxValue("velocity")
 	if err != nil {
 		vel = 0
 	}
-	return &FileSummary{
+	s := &FileSummary{
 		Version:      summaryVersion,
 		CreationTime: file.CreationTime,
 		ModTime:      info.ModTime(),
 		Path:         file.Path,
-		NumLaps:      NumLaps(file),
+		NumLaps:      file.numLaps(),
 		MaxVelocity:  vel,
-		MaxRpm:       rpm}
+		MaxRpm:       rpm,
+		Duration:     jsonDuration(file.duration(0, len(file.Data.Rows)-1)),
+		FastestLap:   file.fastestLap(),
+		Laps:         file.Laps}
+
+	return s
 }
 
 func summaryExists(path string) (string, bool) {
@@ -146,11 +151,32 @@ func saveSummary(path string, summary *FileSummary) {
 }
 
 type FileSummary struct {
-	Version      string    `json:"version,omitempty"`
-	CreationTime time.Time `json:"creationtime"`
-	ModTime      time.Time `json:"modtime"`
-	Path         string    `json:"path"`
-	NumLaps      uint32    `json:"numlaps"`
-	MaxVelocity  float64   `json:"maxvelocity"`
-	MaxRpm       float64   `json:"maxrpm"`
+	Version      string       `json:"version,omitempty"`
+	CreationTime time.Time    `json:"creationtime"`
+	ModTime      time.Time    `json:"modtime"`
+	Path         string       `json:"path"`
+	Duration     jsonDuration `json:"duration"`
+	NumLaps      int          `json:"numlaps"`
+	MaxVelocity  float64      `json:"maxvelocity"`
+	MaxRpm       float64      `json:"maxrpm"`
+	FastestLap   jsonDuration `json:"fastestLap"`
+	Laps         []Lap        `json:"laps"`
 }
+
+func (d *jsonDuration) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+
+	timeD, err := time.ParseDuration(s)
+	*d = jsonDuration(timeD)
+	return err
+}
+
+func (d jsonDuration) MarshalJSON() ([]byte, error) {
+	timeD := time.Duration(d)
+	return json.Marshal(timeD.String())
+}
+
+type jsonDuration time.Duration

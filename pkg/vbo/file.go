@@ -2,11 +2,17 @@ package vbo
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+)
+
+const (
+	timeLayout = `150405.00`
+	dateLayout = "02/01/2006 @ 15:04:05"
 )
 
 var dateFormat = regexp.MustCompile(`(0[1-9]|[12]\d|3[01])/(0[1-9]|1[0-2])/([12]\d{3}) @ ([01]\d|2[0-3]):([0-5]\d):([0-5]\d)`)
@@ -45,6 +51,7 @@ func ParseFile(path string) File {
 		}
 
 	}
+	vboFile.Laps = processLaps(vboFile)
 	return vboFile
 }
 
@@ -53,12 +60,12 @@ func processRow(section string, line string, vboFile *File) {
 	case "pre":
 		ds := dateFormat.FindString(line)
 		if len(ds) > 0 {
-			if date, err := time.Parse("02/01/2006 @ 15:04:05", ds); err == nil {
+			if date, err := time.Parse(dateLayout, ds); err == nil {
 				vboFile.CreationTime = date
 			}
 		}
 	case "data":
-		vboFile.CreateDataRow(strings.Fields(line))
+		vboFile.createDataRow(strings.Fields(line))
 	// case "header":
 	// 	vboFile.header = append(vboFile.header, strings.Fields(line)...)
 	case "laptiming":
@@ -73,4 +80,83 @@ func processRow(section string, line string, vboFile *File) {
 			vboFile.Columns[v] = i
 		}
 	}
+}
+
+func (f *File) createDataRow(fields []string) {
+	fieldIndex := f.Columns
+	data := make([]interface{}, len(fieldIndex))
+
+	for name, index := range fieldIndex {
+		switch name {
+		case "sats":
+			data[index], _ = strconv.Atoi(fields[index])
+		case "time":
+			data[index] = fields[index]
+		default:
+			if v, err := strconv.ParseFloat(fields[index], 64); err == nil {
+				data[index] = v
+				f.Data.updateMaxValue(index, v)
+			}
+		}
+	}
+
+	f.Data.Rows = append(f.Data.Rows, DataRow{data})
+
+}
+
+func (data *Data) updateMaxValue(index int, val float64) {
+	if cur := data.MaxValues[index]; val > cur {
+		data.MaxValues[index] = val
+	}
+}
+
+func (f *File) maxValue(channel string) (float64, error) {
+	i, ok := f.Columns[channel]
+
+	if !ok {
+		return 0, fmt.Errorf("No channel name %v", channel)
+	}
+
+	return f.Data.MaxValues[i], nil
+}
+
+func (f *File) duration(s, e int) time.Duration {
+	i, ok := f.Columns["time"]
+	if !ok {
+		return 0
+	}
+	rows := f.Data.Rows
+	start := parseTime(rows[s].data[i].(string))
+	end := parseTime(rows[e].data[i].(string))
+	return end.Sub(start)
+}
+
+func parseTime(t string) time.Time {
+	ts, err := time.Parse(timeLayout, t)
+	if err != nil {
+		fmt.Printf("Failed to parse duration %v - %v", t, err)
+		return *new(time.Time)
+	}
+	return ts
+}
+
+func (f *File) numLaps() (completedLaps int) {
+	for _, l := range f.Laps {
+		if !l.Partial {
+			completedLaps = completedLaps + 1
+		}
+	}
+	return
+}
+
+func (f *File) fastestLap() jsonDuration {
+	var d jsonDuration
+	for _, l := range f.Laps {
+		if !l.Partial {
+			if d == 0 || d > l.LapTime {
+				d = l.LapTime
+			}
+		}
+	}
+	return d
 }
