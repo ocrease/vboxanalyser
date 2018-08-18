@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-//VboFile Main file object
+//File Main file object
 type File struct {
 	Path         string
 	CreationTime time.Time
@@ -14,12 +14,13 @@ type File struct {
 	Start        LatLng
 	Columns      map[string]int
 	Data         *Data
+	Laps         []Lap
 }
 
 // type VboFileChannelUnits struct {
 // }
 
-//VboFileComments contains file information
+//Comments contains file information
 type Comments struct {
 	vboxVersion  string
 	serialNumber string
@@ -35,13 +36,20 @@ type Comments struct {
 // type VboFileAvi struct {
 // }
 
-//VboFileData contains all the data rows
+//Data contains all the data rows
 type Data struct {
 	Rows      []DataRow
 	MaxValues []float64
 }
 
-//VboFileDataRow contains the data fields in a row
+type Lap struct {
+	startIndex uint32
+	endIndex   uint32
+	lapTime    time.Duration
+	maxValues  []float64
+}
+
+//DataRow contains the data fields in a row
 type DataRow struct {
 	data []interface{}
 }

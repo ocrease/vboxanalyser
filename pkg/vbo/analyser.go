@@ -46,7 +46,6 @@ func walkFunc(consumer func(FileSummary)) func(path string, info os.FileInfo, er
 }
 
 func handleFile(path string, info os.FileInfo, consumer func(FileSummary)) {
-	fmt.Printf("Analysing %v\n", path)
 	vbs, vbsExists := summaryExists(path)
 	if vbsExists {
 		summary, err := loadSummary(vbs)
@@ -60,6 +59,7 @@ func handleFile(path string, info os.FileInfo, consumer func(FileSummary)) {
 		}
 	}
 
+	fmt.Printf("Analysing %v\n", path)
 	file := ParseFile(path)
 	summary := generateSummary(&file, info)
 	saveSummary(vbs, summary)
@@ -75,7 +75,14 @@ func generateSummary(file *File, info os.FileInfo) *FileSummary {
 	if err != nil {
 		vel = 0
 	}
-	return &FileSummary{Version: summaryVersion, CreationTime: file.CreationTime, ModTime: info.ModTime(), Path: file.Path, NumLaps: NumLaps(file), MaxVelocity: vel, MaxRpm: rpm}
+	return &FileSummary{
+		Version:      summaryVersion,
+		CreationTime: file.CreationTime,
+		ModTime:      info.ModTime(),
+		Path:         file.Path,
+		NumLaps:      NumLaps(file),
+		MaxVelocity:  vel,
+		MaxRpm:       rpm}
 }
 
 func summaryExists(path string) (string, bool) {
