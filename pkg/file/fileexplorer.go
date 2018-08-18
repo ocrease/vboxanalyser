@@ -6,42 +6,8 @@ import (
 	"path/filepath"
 )
 
-func bitsToDrives(bitMap uint32) (drives []string) {
-	availableDrives := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
-
-	for i := range availableDrives {
-		if bitMap&1 == 1 {
-			drives = append(drives, availableDrives[i]+":")
-		}
-		bitMap >>= 1
-	}
-
-	return
-}
-
 type Explorer struct {
 }
-
-// func (fe *Explorer) GetDirectoryContents(path string) ([]FileDescriptor, error) {
-// 	var dirs []FileDescriptor
-// 	if len(path) == 0 {
-// 		for _, v := range getRootPaths() {
-// 			dirs = append(dirs, FileDescriptor{Path: v, IsDir: true})
-// 		}
-// 	} else {
-// 		files, err := ioutil.ReadDir(path)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		for _, f := range files {
-// 			if f.IsDir() {
-// 				dirs = append(dirs, FileDescriptor{BasePath: path, Path: f.Name(), IsDir: true})
-// 			}
-// 		}
-// 	}
-// 	return dirs, nil
-// }
 
 func (fe *Explorer) GetDirectory(path string) (dirs []Directory) {
 	var subDirs []string

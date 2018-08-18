@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/ocrease/vboxanalyser/pkg/server"
@@ -11,61 +10,49 @@ import (
 	"github.com/pkg/browser"
 )
 
-const VboxExtension = ".vbo"
+var (
+	cli       bool
+	open      bool
+	dir       string
+	channel   string
+	threshold float64
+	port      int
+)
 
-func main() {
-	dir := flag.String("dir", ".", "Specify the directory to scan")
-	channel := flag.String("c", "LOT_Engine_Spd", "Specify the channel to analyse - rpm, speedKph, speedMph")
-	threshold := flag.Float64("t", 8300, "Specify the RPM threshold")
+func init() {
+	flag.BoolVar(&cli, "cli", false, "Enable command line interface only")
 
-	_ = channel
-	_ = threshold
-	//staticPath := flag.String("webDir", "./web/vboxanalyser/src/", "directory for web resources")
-
+	flag.IntVar(&port, "port", 8080, "HTTP Port - not in CLI mode")
+	flag.BoolVar(&open, "open", true, "Open Browser - not in CLI mode")
+	flag.StringVar(&dir, "dir", ".", "Specify the directory to scan - CLI Mode only")
+	flag.StringVar(&channel, "c", "rpm", "Specify the channel to analyse - rpm, speedKph - CLI Mode only")
+	flag.Float64Var(&threshold, "t", 8300, "Specify the threshold - CLI Mode only")
 	flag.Parse()
-
-	// explorer := fe.FileExplorer{}
-
-	// files, err := explorer.GetDirectoryContents("C:/Racing/2018-03-16 Snetterton300")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// for _, f := range files {
-	// 	fmt.Printf("%v/%v\n", f.BasePath, f.Path)
-	// }
-
-	path, _ := filepath.Abs(*dir)
-	fmt.Printf("Analysing .vbo files in: %v\n", path)
-
-	// err := filepath.Walk(*dir, createFileProcessor(*channel, *threshold))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	browser.OpenURL("http://localhost:8080")
-	server.NewServer().Start()
-
 }
 
-func createFileProcessor(channel string, threshold float64) func(string, os.FileInfo, error) error {
-	return func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
+func main() {
+
+	if !cli {
+		if open {
+			browser.OpenURL(fmt.Sprintf("http://localhost:%v", port))
 		}
-		if !info.IsDir() {
-			if filepath.Ext(path) == VboxExtension {
-				file := vbo.ParseFile(path)
-				//fmt.Printf("%v - num points %v, num columns %v\n", path, len(file.Data.Rows), len(file.Columns))
-				v, err := file.MaxValue(channel)
-				if err != nil {
-					fmt.Printf("%v - %v\n", path, err)
-				}
-				if v > threshold {
-					fmt.Printf("%v - %v laps - %v\n", path, vbo.NumLaps(&file), v)
-				}
-			}
-		}
-		return nil
+		server.NewServer(port).Start()
 	}
+
+	path, _ := filepath.Abs(dir)
+	fmt.Printf("Analysing .vbo files in: %v\n", path)
+
+	analyser := vbo.Analyser{}
+	analyser.AnalyseDirectory(path, func(summary vbo.FileSummary) {
+		var channelValue float64
+		switch channel {
+		case "rpm":
+			channelValue = summary.MaxRpm
+		case "speedKph":
+			channelValue = summary.MaxVelocity
+		}
+		if channelValue > threshold {
+			fmt.Printf("%v - %v laps - %v\n", summary.Path, summary.NumLaps, channelValue)
+		}
+	})
 }
