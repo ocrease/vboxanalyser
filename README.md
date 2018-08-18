@@ -8,5 +8,3 @@ Run vboxanalyser.exe. This should open up a browser window. If not, open a brows
 
 ## Note
 This is very much work in progress. Use at your own risk.
-
-
