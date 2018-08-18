@@ -159,7 +159,7 @@ type FileSummary struct {
 	NumLaps      int          `json:"numlaps"`
 	MaxVelocity  float64      `json:"maxvelocity"`
 	MaxRpm       float64      `json:"maxrpm"`
-	FastestLap   jsonDuration `json:"fastestLap"`
+	FastestLap   jsonDuration `json:"fastestlap"`
 	Laps         []Lap        `json:"laps"`
 }
 
