@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	rice "github.com/GeertJohan/go.rice"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
@@ -26,7 +25,7 @@ func NewServer(port int) *Server {
 
 	s.router.HandleFunc("/api/directory", s.directoryList).Methods("GET")
 	s.router.HandleFunc("/api/analyse", s.analyseDirectory).Methods("GET")
-	s.router.PathPrefix("/").Handler(http.FileServer(rice.MustFindBox("../../ui").HTTPBox()))
+	s.router.PathPrefix("/").Handler(http.FileServer(http.Dir("./ui/")))
 
 	return &s
 }

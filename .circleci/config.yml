@@ -23,6 +23,8 @@ jobs:
           name: cross compile
           command: |
             gox -os="windows" -arch="amd64" -output="dist/vboxanalyser" ./cmd/vboxanalyser
+            mkdir dist/ui
+            cp ui/* dist/ui
             cd dist/ && zip vboxanalyser * 
             mkdir rel
             mv vboxanalyser.zip rel/vboxanalyser.zip
