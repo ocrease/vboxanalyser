@@ -10,9 +10,16 @@ import (
 	"time"
 )
 
+//Column constants
 const (
 	timeLayout = `150405.00`
 	dateLayout = "02/01/2006 @ 15:04:05"
+
+	Velocity  = "velocity kmh"
+	Latitude  = "latitude"
+	Longitude = "longitude"
+	Time      = "time"
+	Sats      = "sats"
 )
 
 var dateFormat = regexp.MustCompile(`(0[1-9]|[12]\d|3[01])/(0[1-9]|1[0-2])/([12]\d{3}) @ ([01]\d|2[0-3]):([0-5]\d):([0-5]\d)`)
@@ -64,6 +71,10 @@ func processRow(section string, line string, vboFile *File) {
 				vboFile.CreationTime = date
 			}
 		}
+
+	case "header":
+		index := len(vboFile.Columns)
+		vboFile.Columns[line] = index
 	case "data":
 		vboFile.createDataRow(strings.Fields(line))
 	// case "header":
@@ -76,9 +87,9 @@ func processRow(section string, line string, vboFile *File) {
 			vboFile.Start = LatLng{lat1 / 60, lon1 * -1 / 60}
 		}
 	case "columns":
-		for i, v := range strings.Fields(line) {
-			vboFile.Columns[v] = i
-		}
+		// for i, v := range strings.Fields(line) {
+		// 	vboFile.Columns[v] = i
+		// }
 	}
 }
 
@@ -88,9 +99,9 @@ func (f *File) createDataRow(fields []string) {
 
 	for name, index := range fieldIndex {
 		switch name {
-		case "sats":
+		case Sats:
 			data[index], _ = strconv.Atoi(fields[index])
-		case "time":
+		case Time:
 			data[index] = fields[index]
 		default:
 			if v, err := strconv.ParseFloat(fields[index], 64); err == nil {
@@ -121,11 +132,14 @@ func (f *File) maxValue(channel string) (float64, error) {
 }
 
 func (f *File) duration(s, e int) time.Duration {
-	i, ok := f.Columns["time"]
+	i, ok := f.Columns[Time]
 	if !ok {
 		return 0
 	}
 	rows := f.Data.Rows
+	if len(rows) == 0 {
+		return 0
+	}
 	start := parseTime(rows[s].data[i].(string))
 	end := parseTime(rows[e].data[i].(string))
 	return end.Sub(start)

@@ -17,8 +17,8 @@ func processLaps(f File) (laps []Lap) {
 	startLine := s2.PointFromLatLng(s2.LatLngFromDegrees(f.Start.Lat, f.Start.Lng))
 	rows := f.Data.Rows
 
-	latIndex := f.Columns["lat"]
-	longIndex := f.Columns["long"]
+	latIndex := f.Columns[Latitude]
+	longIndex := f.Columns[Longitude]
 	latLng := func(r DataRow) s2.LatLng {
 		s1Lat := r.GetValue(latIndex).(float64)
 		s1Lng := r.GetValue(longIndex).(float64)
@@ -117,16 +117,23 @@ func newLap(f File, s int, e int, partial bool, duration func(a, b int) time.Dur
 	return Lap{startIndex: s, endIndex: e, Partial: partial, LapTime: jsonDuration(duration(s, e).Round(10 * time.Millisecond))}
 }
 
-// func Distance(f *vbo.File) float64 {
-// 	//latLons := make([]s2.LatLng, len(file.data.rows))
-// 	var distance float64
-// 	for i, v := range f.Data.Rows {
-// 		if i == 0 {
-// 			continue
-// 		}
-// 		distance = distance + v.latLon.Distance(file.data.rows[i-1].latLon).Radians()
-// 		//latLons = append(latLons, v.latLon)
-// 	}
-// 	//polyline := s2.PolylineFromLatLngs(latLons)
-// 	return distance * (EarthRadius / 1000)
-// }
+func Distance(f *File) float64 {
+	//latLons := make([]s2.LatLng, len(file.data.rows))
+	latIndex := f.Columns[Latitude]
+	longIndex := f.Columns[Longitude]
+	latLng := func(r DataRow) s2.LatLng {
+		s1Lat := r.GetValue(latIndex).(float64)
+		s1Lng := r.GetValue(longIndex).(float64)
+		return s2.LatLngFromDegrees(s1Lat/60, s1Lng*-1/60)
+	}
+	var distance float64
+	for i, v := range f.Data.Rows {
+		if i == 0 {
+			continue
+		}
+		distance = distance + latLng(v).Distance(latLng(f.Data.Rows[i-1])).Radians()
+		//latLons = append(latLons, v.latLon)
+	}
+	//polyline := s2.PolylineFromLatLngs(latLons)
+	return distance * (earthRadius / 1000)
+}

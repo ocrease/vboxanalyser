@@ -17,7 +17,7 @@ type Analyser struct{}
 const (
 	vboxExtension    = ".vbo"
 	summaryExtension = ".vbs"
-	summaryVersion   = "0.2.0"
+	summaryVersion   = "0.3.4"
 )
 
 var summaryVersionConstraint, _ = semver.NewConstraint(summaryVersion)
@@ -71,7 +71,7 @@ func generateSummary(file *File, info os.FileInfo) *FileSummary {
 	if err != nil {
 		rpm = 0
 	}
-	vel, err := file.maxValue("velocity")
+	vel, err := file.maxValue(Velocity)
 	if err != nil {
 		vel = 0
 	}
@@ -85,7 +85,8 @@ func generateSummary(file *File, info os.FileInfo) *FileSummary {
 		MaxRpm:       rpm,
 		Duration:     jsonDuration(file.duration(0, len(file.Data.Rows)-1)),
 		FastestLap:   file.fastestLap(),
-		Laps:         file.Laps}
+		Laps:         file.Laps,
+		Distance:     Distance(file)}
 
 	return s
 }
@@ -161,6 +162,7 @@ type FileSummary struct {
 	MaxRpm       float64      `json:"maxrpm"`
 	FastestLap   jsonDuration `json:"fastestlap"`
 	Laps         []Lap        `json:"laps"`
+	Distance     float64      `json:"distance"`
 }
 
 func (d *jsonDuration) UnmarshalJSON(b []byte) error {
