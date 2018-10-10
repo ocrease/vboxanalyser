@@ -25,6 +25,7 @@ jobs:
             gox -os="windows" -arch="amd64" -output="dist/vboxanalyser" ./cmd/vboxanalyser
             mkdir dist/ui
             cp ui/* dist/ui
+            cp vboxanalyser.cfg dist
             cd dist/ && zip -r vboxanalyser . 
             mkdir rel
             mv vboxanalyser.zip rel/vboxanalyser.zip
