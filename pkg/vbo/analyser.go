@@ -17,7 +17,7 @@ type Analyser struct{}
 const (
 	vboxExtension    = ".vbo"
 	summaryExtension = ".vbs"
-	summaryVersion   = "0.3.4"
+	summaryVersion   = "0.4.0"
 )
 
 var summaryVersionConstraint, _ = semver.NewConstraint(summaryVersion)
