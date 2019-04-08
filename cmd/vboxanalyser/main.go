@@ -33,10 +33,14 @@ func init() {
 func main() {
 
 	if !cli {
-		if open {
-			browser.OpenURL(fmt.Sprintf("http://localhost:%v", port))
+		config := vbo.LoadConfig("vboxanalyser.cfg")
+		if config != nil {
+			fmt.Printf("CircuitTools executable at: %s\n", config.CTPath)
 		}
-		server.NewServer(port).Start()
+		if open {
+			browser.OpenURL(fmt.Sprintf("http://localhost:%v", config.Port))
+		}
+		server.NewServer(config).Start()
 	}
 
 	path, _ := filepath.Abs(dir)
