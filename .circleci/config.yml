@@ -26,6 +26,7 @@ jobs:
       - restore_cache:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
+      - run: go mod download
       - run:
           name: cross compile
           command: |
