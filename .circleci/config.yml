@@ -2,23 +2,30 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang:1.13.3
+        environment:
+          GO111MODULE: "on"
       
     working_directory: /go/src/github.com/ocrease/vboxanalyser
     steps:
       - checkout
-      - run: go get -v -t -d ./...
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
       - run: go test -v ./...
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
   deploy:
     docker:
-       - image: circleci/golang:1.9
+       - image: circleci/golang:1.13.1
     working_directory: /go/src/github.com/ocrease/vboxanalyser
     steps:
       - checkout
-      - run: go get -u github.com/mitchellh/gox
-      - run: go get -u github.com/tcnksm/ghr
-      - run: go get -u github.com/stevenmatthewt/semantics
-      - run: go get -v -t -d ./...
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
       - run:
           name: cross compile
           command: |
@@ -29,6 +36,10 @@ jobs:
             cd dist/ && zip -r vboxanalyser . 
             mkdir rel
             mv vboxanalyser.zip rel/vboxanalyser.zip
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
       #- store_artifacts:
       #    path: dist/
       - add_ssh_keys
